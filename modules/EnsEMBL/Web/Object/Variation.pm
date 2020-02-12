@@ -1764,6 +1764,13 @@ sub get_citation_data{
     return $self->{'citation_data'};
 }
 
+## extract publications source for table of publications citing this variant
+sub get_citation_source{
+  my $self = shift;
+
+  $self->{'citation_source'} ||= $self->hub->database('variation')->get_PublicationAdaptor->fetch_sources_by_variation($self->vari->dbID);
+  return $self->{'citation_source'};
+}
 
 ## Allele/genotype colours
 sub get_allele_genotype_colours {

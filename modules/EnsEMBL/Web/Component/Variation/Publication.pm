@@ -41,12 +41,13 @@ sub content {
 
   
   my $data = $object->get_citation_data;
+  my $data_source = $object->get_citation_source;
   
   return $self->_info('No citation data is available') unless scalar @$data;
   
   my $html = ('<h3>' . $object->name() .' is mentioned in the following publications</h3>'); 
 
-  my ($table_rows,  $column_flags) = $self->table_data($data);
+  my ($table_rows,  $column_flags) = $self->table_data($data, $data_source);
   my $table = $self->new_table([], [], { data_table => 1, sorting => [ 'year desc' ] });
    
 
@@ -63,6 +64,7 @@ sub content {
     { key => 'title',  title => 'Title',     align => 'left', sort => 'html'    },  
     { key => 'author', title => 'Author(s)', align => 'left', sort => 'html'    },
     { key => 'text',   title => 'Full text', align => 'left', sort => 'html'    },  
+    { key => 'source', title => 'Citation source', align => 'left', sort => 'html'    },
   );
 
   foreach my $row (@{$table_rows}){  $table->add_rows($row);}
@@ -73,8 +75,10 @@ sub content {
 
 
 sub table_data { 
-  my ($self, $citation_data) = @_;
-  
+  my ($self, $citation_data, $data_source) = @_;
+
+  my %sources = %{$data_source};
+
   my $hub        = $self->hub;
   my $object     = $self->object;
 
@@ -122,6 +126,10 @@ sub table_data {
         $phenotypes_helptip
     };
 
+    # Publication source
+    my $pub_id = $cit->dbID;
+    my $pub_sources = $sources{$pub_id};
+
     my $row = {
 	  year   => $cit->year(),
 	  pmid   => defined $cit->pmid() ? $hub->get_ExtURL_link($cit->pmid(), "EPMC_MED", $cit->pmid()) : undef,
@@ -129,6 +137,7 @@ sub table_data {
 	  title  => $cit->title(),
 	  author => $cit->authors(),
 	  text   => defined $cit->pmcid() ? $hub->get_ExtURL_link($cit->pmcid(), "EPMC", $cit->pmcid()) : undef,
+          source => $pub_sources,
     };
  
     push @data_rows, $row;
