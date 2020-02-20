@@ -127,7 +127,15 @@ sub supporting_evidence_table {
                       });
         $name = qq{<a href="$sv_link">$name</a>};
       }
-  
+
+      # Frequency
+      my ($freq, $count);
+      foreach my $svf (@{$ssv_obj->get_all_StructuralVariationFeatures}) {
+        $freq = $svf->{allele_freq};
+        $count = $svf->{allele_count};
+        $has_data{'frequency'} = 1;
+      }
+
       # Class + class colour
       my $colour = $object->get_class_colour($ssv_obj->class_SO_term);
       my $sv_class = sprintf('<span class="hidden export">%s</span><span class="structural-variation-allele" style="background-color:%s"></span><span style="margin-bottom:2px">%s</span>', $ssv_obj->var_class, $colour, $ssv_obj->var_class);
@@ -202,6 +210,8 @@ sub supporting_evidence_table {
                   strain   => $strain ? $strain : '-',
                   bp_order => $bp_order ? $bp_order : '-',
                   phen     => $phen ? $phen : '-',
+                  frequency => $freq ? $freq : '-',
+                  count     => $count ? $count : '-',
                 );
         
       push @$rows, \%row;
@@ -233,6 +243,11 @@ sub supporting_evidence_table {
     if ($has_data{'str'}) {  
      push(@$columns,{ key => 'strain', sort => 'string', title => ucfirst $hub->species_defs->STRAIN_TYPE });
     };
+
+    if ($has_data{'frequency'}) {
+      push(@$columns,{ key => 'frequency', sort => 'string', title => 'Allele Frequency (AF)' });
+      push(@$columns,{ key => 'count', sort => 'string', title => 'Allele Count (AC)' });
+    }
 
     my $ssv_count   = scalar(@{$ssvs});
     my $sub_header  = $object->name." has ".$self->thousandify($ssv_count)." variant call";
